@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.health.dao.CheckItemDao">
+
+    <!-- 新增检查项 -->
+    <insert id="add" parameterType="checkItem">
+        insert into t_checkitem (code, name, sex, age, price, type, remark, attention) values (#{code}, #{name}, #{sex}, #{age}, #{price}, #{type}, #{remark}, #{attention})
+    </insert>
+
+    <!-- 查询检查项 -->
+    <select id="findByCondition" parameterType="string" resultType="checkItem">
+        select * from t_checkitem
+        <where>
+            <if test="value != null and value.length > 0">
+                code like '%${value}%' or name like "%"#{value}"%"
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据检查项id查询与检查组的中间表是否存在 -->
+    <select id="findCountByCheckItemId" parameterType="int" resultType="long">
+        SELECT COUNT(*) FROM `t_checkgroup_checkitem` WHERE checkitem_id = #{checkitem_id}
+    </select>
+    <!-- 删除 -->
+    <delete id="deleteById" parameterType="int" >
+        DELETE FROM `t_checkitem` WHERE id = #{id}
+    </delete>
+
+    <!-- 编辑回显 -->
+    <select id="findCheckItemById" parameterType="int" resultType="checkItem">
+        SELECT * FROM t_checkitem WHERE id = #{id}
+    </select>
+
+    <!-- 编辑 -->
+    <update id="edit" parameterType="checkItem">
+        update `t_checkitem`
+        <set>
+            <if test=" code != null and code.length > 0 ">
+                code = #{code},
+            </if>
+            <if test=" name != null and name.length > 0 ">
+                name = #{name},
+            </if>
+            <if test=" sex != null and sex.length > 0 ">
+                sex = #{sex},
+            </if>
+            <if test=" age != null and age.length > 0 ">
+                age = #{age},
+            </if>
+            <if test=" price != null ">
+                price = #{price},
+            </if>
+            <if test=" type != null and type.length > 0 ">
+                type = #{type},
+            </if>
+            <if test=" remark != null and remark.length > 0 ">
+                remark = #{remark},
+            </if>
+            <if test=" attention != null and attention.length > 0 ">
+                attention = #{attention},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="findAll" resultType="checkItem">
+        select * from t_checkitem
+    </select>
+
+
+
+    <select id="findCheckItemListById" parameterType="int" resultType="checkItem">
+        select * from t_checkitem where id in (select checkitem_id from t_checkgroup_checkitem where checkgroup_id = #{id})
+    </select>
+</mapper>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.health.dao.SetMealDao">
+    <select id="findPage" parameterType="string" resultType="setmeal">
+        select * from t_setmeal
+        <where>
+            <if test="value != null and value.length > 0">
+                code like "%"#{value}"%" or name like '%${value}%'
+            </if>
+        </where>
+    </select>
+
+    <insert id="add" parameterType="setmeal">
+        <selectKey resultType="int" keyProperty="id" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        insert into t_setmeal (name, code, helpCode, sex, age, price, remark, attention, img) values (#{name}, #{code}, #{helpCode}, #{sex}, #{age}, #{price}, #{remark}, #{attention}, #{img})
+    </insert>
+
+    <insert id="addSetMealAndCheckGroup" parameterType="map">
+        insert into t_setmeal_checkgroup (setmeal_id,checkgroup_id) values (#{setMealId},#{checkGroupId})
+    </insert>
+
+    <select id="findAll" resultType="setMeal">
+        select * from t_setmeal
+    </select>
+
+
+
+    <resultMap id="setmealMap" type="setmeal">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="helpCode" property="helpCode"/>
+        <result column="sex" property="sex"/>
+        <result column="age" property="age"/>
+        <result column="price" property="price"/>
+        <result column="remark" property="remark"/>
+        <result column="attention" property="attention"/>
+        <result column="img" property="img"/>
+        
+        <collection property="checkGroups" column="id" select="com.itheima.health.dao.CheckGroupDao.findCheckGroupListById"></collection>
+    </resultMap>
+    <select id="findById" parameterType="int" resultMap="setmealMap">
+        select * from t_setmeal where id=#{id}
+    </select>
+
+    <!--   查询套餐的名称，和套餐预约次数的值    -->
+    <select id="findSetmealCount" resultType="map">
+        SELECT s.name,COUNT(o.id) value FROM  t_order o, t_setmeal s WHERE o.setmeal_id = s.id GROUP BY s.name
+    </select>
+    
+    
+    
+    
+    
+    
+    
+</mapper>

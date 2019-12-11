@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.health.dao.CheckGroupDao">
+
+    <select id="selectByCondition" parameterType="string" resultType="checkGroup">
+        select * from t_checkgroup
+        <where>
+            <if test="value != null and value.length > 0">
+                code like '%${value}%' or name like "%"#{value}"%"
+            </if>
+        </where>
+    </select>
+
+
+     <!-- 增 -->
+    <insert id="add" parameterType="checkGroup">
+        <!-- 在添加之后，将自增长的id赋值给传入的user对象
+               keyColumn 表示要查询的字段名
+               keyProperty表示要设置到JavaBean对象的属性名
+               resultType表示要查询到的返回值的类型
+               order 表示这个标签是执行在添加前还是之后
+         -->
+        <selectKey keyProperty="id" resultType="int" order="AFTER">
+            select last_insert_id()
+        </selectKey>
+        <!-- sql语句 -->
+        insert into t_checkgroup (code, name, helpCode, sex, remark, attention) value (#{code}, #{name}, #{helpCode}, #{sex}, #{remark}, #{attention})
+    </insert>
+
+    <!--设置检查组和检查项的关联关系-->
+    <insert id="setCheckGroupAndCheckItem" parameterType="map">
+        insert into t_checkgroup_checkitem (checkgroup_id,checkitem_id) values (#{checkGroupId},#{checkitemId})
+    </insert>
+
+    <select id="findById" parameterType="int" resultType="checkGroup">
+        select * from t_checkgroup where id = #{id}
+    </select>
+
+    <select id="findCheckItemIdsByCheckGroupId" parameterType="int" resultType="int">
+        select checkitem_id from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </select>
+
+    <delete id="deleteAssociation" parameterType="int">
+        delete from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </delete>
+
+    <update id="edit" parameterType="checkGroup">
+        update t_checkgroup
+        <set>
+            <if test="code != null and code.length > 0">
+                code = #{code},
+            </if>
+            <if test="name != null and name.length > 0">
+                name = #{name},
+            </if>
+            <if test="helpCode != null and helpCode.length > 0">
+                helpCode = #{helpCode},
+            </if>
+            <if test="sex != null and sex.length > 0">
+                sex = #{sex},
+            </if>
+            <if test="remark != null and remark.length > 0">
+                remark = #{remark},
+            </if>
+            <if test="attention != null and attention.length > 0">
+                attention = #{attention},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <select id="findCountByCheckGroup" parameterType="int" resultType="long">
+        select count(*) from t_checkgroup_checkitem where checkgroup_id = #{id}
+    </select>
+
+    <delete id="delete" parameterType="int">
+        delete from t_checkgroup where id = #{id}
+    </delete>
+
+    <select id="findAll" resultType="checkGroup">
+        select * from t_checkgroup
+    </select>
+
+
+
+
+    <resultMap id="checkGroupMap" type="checkGroup">
+        <id column="id" property="id"/>
+        <result column="code" property="code"/>
+        <result column="name" property="name"/>
+        <result column="helpCode" property="helpCode"/>
+        <result column="sex" property="sex"/>
+        <result column="remark" property="remark"/>
+        <result column="attention" property="attention"/>
+
+        <collection property="checkItems" column="id" select="com.itheima.health.dao.CheckItemDao.findCheckItemListById"></collection>
+    </resultMap>
+    <select id="findCheckGroupListById" parameterType="int" resultMap="checkGroupMap">
+        select * from t_checkgroup where id in (select checkgroup_id from t_setmeal_checkgroup where setmeal_id=#{id})
+    </select>
+</mapper>
